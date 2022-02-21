@@ -85,15 +85,17 @@ class UNet(nn.Module):
         out = torch.sigmoid(out)
         return out
 
-model = UNet(retain_dim=True)
+model = UNet(retain_dim=True).cuda()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 epoch_loss = []
 max_epochs = 10
+import time
 for epoch in range(max_epochs):
+    start = time.time()
     losses = []
     for i, (x,y) in enumerate(dataset_loader):
-        x = x.float()
-        y = y.float()
+        x = x.float().cuda()
+        y = y.float().cuda()
         pred = model(x) * 255
         # print(pred.size())
         optimizer.zero_grad()
@@ -102,6 +104,8 @@ for epoch in range(max_epochs):
         loss.backward()
         optimizer.step()
     epoch_loss.append(np.mean(losses))
+    end = time.time()
+    print('Epoch ' + str(epoch) + ': ' + str(end-start) + 's')
 
 ##
 # Plot Loss
@@ -112,3 +116,4 @@ plt.ylabel('MSE')
 plt.xlabel('Epochs')
 plt.savefig('loss.png')
 
+print('Done')
